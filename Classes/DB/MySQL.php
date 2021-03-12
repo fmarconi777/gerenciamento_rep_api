@@ -84,10 +84,10 @@ class MySQL {
      * @return array
      */
 
-    public function getAll($tabela){
+    public function getAll($tabela, $ordem){
 
         if($tabela) {
-            $consulta = 'SELECT * FROM '.$tabela;
+            $consulta = 'SELECT * FROM '.$tabela.' ORDER BY '.$ordem;
             $stmt = $this->db->query($consulta);
             $registros = $stmt->fetchAll($this->db::FETCH_ASSOC);
             if (is_array($registros) && count($registros) > 0) {

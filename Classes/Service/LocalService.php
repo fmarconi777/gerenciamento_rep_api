@@ -3,13 +3,13 @@
 namespace Service;
 
 use InvalidArgumentException;
-use Repository\FuncionarioRepository;
+use Repository\LocalRepository;
 use Util\ConstantesGenericasUtil;
 
-class FuncionarioService
+class LocalService
 {
 
-    public const tabela = 'Funcionario';
+    public const tabela = 'Local';
     public const ordem = 'Nome';
     public const RECURSOS_GET = ['listar'];
     public const RECURSOS_DELETE = ['deletar'];
@@ -18,17 +18,17 @@ class FuncionarioService
 
     private array $dados;
     private array $dadsoCorpoRequest = [];
-    private object $FuncionarioRepository;
+    private object $LocalRepository;
 
     /**
-     * FuncionarioService constructor
+     * LocalService constructor
      * @param array $dados
      */
 
     public function __construct($dados = [])
     {
         $this->dados = $dados;
-        $this->FuncionarioRepository = new FuncionarioRepository;
+        $this->LocalRepository = new LocalRepository;
     }
 
     public function validarGet()
@@ -111,32 +111,29 @@ class FuncionarioService
 
     private function getOneByKey()
     {
-        return $this->FuncionarioRepository->getMySQL()->getOneByKey(self::tabela, $this->dados['id']);
+        return $this->LocalRepository->getMySQL()->getOneByKey(self::tabela, $this->dados['id']);
     }
 
     private function listar()
     {
-        return $this->FuncionarioRepository->getMySQL()->getAll(self::tabela, self::ordem);
+        return $this->LocalRepository->getMySQL()->getAll(self::tabela, self::ordem);
     }
 
     private function deletar()
     {
-        return $this->FuncionarioRepository->getMySQL()->delete(self::tabela, $this->dados['id']);
+        return $this->LocalRepository->getMySQL()->delete(self::tabela, $this->dados['id']);
     }
 
     private function cadastrar()
     {
-        [$area, $status, $matricula, $nome, $login, $senha] = [
-            $this->dadsoCorpoRequest['Area'], $this->dadsoCorpoRequest['Status'],
-            $this->dadsoCorpoRequest['Matricula'], $this->dadsoCorpoRequest['Nome'], $this->dadsoCorpoRequest['Login'], $this->dadsoCorpoRequest['Senha']
-        ];
-        if ($area && $status && $matricula && $nome && $login && $senha) {
-            if ($this->FuncionarioRepository->insertUser($area, $status, $matricula, $nome, $login, $senha) > 0) {
-                $idInserido = $this->FuncionarioRepository->getMySQL()->getDb()->lastInsertId();
-                $this->FuncionarioRepository->getMySQL()->getDb()->commit();
+        [$sigla, $nome] = [ $this->dadsoCorpoRequest['Sigla'], $this->dadsoCorpoRequest['Nome'] ];
+        if ($sigla && $nome) {
+            if ($this->LocalRepository->insertLocation($sigla, $nome) > 0) {
+                $idInserido = $this->LocalRepository->getMySQL()->getDb()->lastInsertId();
+                $this->LocalRepository->getMySQL()->getDb()->commit();
                 return ['id_inserido' => $idInserido];
             }
-            $this->FuncionarioRepository->getMySQL()->getDb()->rollBack();
+            $this->LocalRepository->getMySQL()->getDb()->rollBack();
 
             throw new InvalidArgumentException(ConstantesGenericasUtil::MSG_ERRO_GENERICO);
         }
@@ -146,11 +143,11 @@ class FuncionarioService
 
     private function atualizar()
     {
-        if ($this->FuncionarioRepository->updateUser($this->dados['id'], $this->dadsoCorpoRequest) > 0) {
-            $this->FuncionarioRepository->getMySQL()->getDb()->commit();
+        if ($this->LocalRepository->updateLocation($this->dados['id'], $this->dadsoCorpoRequest) > 0) {
+            $this->LocalRepository->getMySQL()->getDb()->commit();
             return ConstantesGenericasUtil::MSG_ATUALIZADO_SUCESSO;
         }
-        $this->FuncionarioRepository->getMySQL()->getDb()->rollBack();
+        $this->LocalRepository->getMySQL()->getDb()->rollBack();
         throw new InvalidArgumentException(ConstantesGenericasUtil::MSG_ERRO_NAO_AFETADO);
     }
 

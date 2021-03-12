@@ -3,14 +3,14 @@
 namespace Service;
 
 use InvalidArgumentException;
-use Repository\FuncionarioRepository;
+use Repository\DefeitoRepository;
 use Util\ConstantesGenericasUtil;
 
-class FuncionarioService
+class DefeitoService
 {
 
-    public const tabela = 'Funcionario';
-    public const ordem = 'Nome';
+    public const tabela = 'Defeitos';
+    public const ordem = 'Defeito';
     public const RECURSOS_GET = ['listar'];
     public const RECURSOS_DELETE = ['deletar'];
     public const RECURSOS_POST = ['cadastrar'];
@@ -18,17 +18,17 @@ class FuncionarioService
 
     private array $dados;
     private array $dadsoCorpoRequest = [];
-    private object $FuncionarioRepository;
+    private object $DefeitoRepository;
 
     /**
-     * FuncionarioService constructor
+     * DefeitoService constructor
      * @param array $dados
      */
 
     public function __construct($dados = [])
     {
         $this->dados = $dados;
-        $this->FuncionarioRepository = new FuncionarioRepository;
+        $this->DefeitoRepository = new DefeitoRepository;
     }
 
     public function validarGet()
@@ -111,32 +111,29 @@ class FuncionarioService
 
     private function getOneByKey()
     {
-        return $this->FuncionarioRepository->getMySQL()->getOneByKey(self::tabela, $this->dados['id']);
+        return $this->DefeitoRepository->getMySQL()->getOneByKey(self::tabela, $this->dados['id']);
     }
 
     private function listar()
     {
-        return $this->FuncionarioRepository->getMySQL()->getAll(self::tabela, self::ordem);
+        return $this->DefeitoRepository->getMySQL()->getAll(self::tabela, self::ordem);
     }
 
     private function deletar()
     {
-        return $this->FuncionarioRepository->getMySQL()->delete(self::tabela, $this->dados['id']);
+        return $this->DefeitoRepository->getMySQL()->delete(self::tabela, $this->dados['id']);
     }
 
     private function cadastrar()
     {
-        [$area, $status, $matricula, $nome, $login, $senha] = [
-            $this->dadsoCorpoRequest['Area'], $this->dadsoCorpoRequest['Status'],
-            $this->dadsoCorpoRequest['Matricula'], $this->dadsoCorpoRequest['Nome'], $this->dadsoCorpoRequest['Login'], $this->dadsoCorpoRequest['Senha']
-        ];
-        if ($area && $status && $matricula && $nome && $login && $senha) {
-            if ($this->FuncionarioRepository->insertUser($area, $status, $matricula, $nome, $login, $senha) > 0) {
-                $idInserido = $this->FuncionarioRepository->getMySQL()->getDb()->lastInsertId();
-                $this->FuncionarioRepository->getMySQL()->getDb()->commit();
+        [$defeito, $descricao] = [ $this->dadsoCorpoRequest['Defeito'], $this->dadsoCorpoRequest['Descricao'] ];
+        if ($defeito && $descricao) {
+            if ($this->DefeitoRepository->insertDefect($defeito, $descricao) > 0) {
+                $idInserido = $this->DefeitoRepository->getMySQL()->getDb()->lastInsertId();
+                $this->DefeitoRepository->getMySQL()->getDb()->commit();
                 return ['id_inserido' => $idInserido];
             }
-            $this->FuncionarioRepository->getMySQL()->getDb()->rollBack();
+            $this->DefeitoRepository->getMySQL()->getDb()->rollBack();
 
             throw new InvalidArgumentException(ConstantesGenericasUtil::MSG_ERRO_GENERICO);
         }
@@ -146,11 +143,11 @@ class FuncionarioService
 
     private function atualizar()
     {
-        if ($this->FuncionarioRepository->updateUser($this->dados['id'], $this->dadsoCorpoRequest) > 0) {
-            $this->FuncionarioRepository->getMySQL()->getDb()->commit();
+        if ($this->DefeitoRepository->updateDefect($this->dados['id'], $this->dadsoCorpoRequest) > 0) {
+            $this->DefeitoRepository->getMySQL()->getDb()->commit();
             return ConstantesGenericasUtil::MSG_ATUALIZADO_SUCESSO;
         }
-        $this->FuncionarioRepository->getMySQL()->getDb()->rollBack();
+        $this->DefeitoRepository->getMySQL()->getDb()->rollBack();
         throw new InvalidArgumentException(ConstantesGenericasUtil::MSG_ERRO_NAO_AFETADO);
     }
 
